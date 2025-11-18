@@ -1,5 +1,7 @@
 import logo from './logo.svg';
 import './App.css';
+import API_BASE_URL from "./config";
+
 
 function App() {
   return (
