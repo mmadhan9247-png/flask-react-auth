@@ -1,3 +1,29 @@
+from flask import Flask, jsonify
+from flask_cors import CORS
+from .extensions import db, jwt
+from .routes.auth import auth_bp
+from .config import config
+
+def create_app(config_name="production"):
+    app = Flask(__name__)
+    app.config.from_object(config[config_name])
+
+    CORS(app)
+
+    db.init_app(app)
+    jwt.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+
+    @app.route("/")
+    def home():
+        return jsonify({"message": "API works", "status": "Backend running"})
+
+    # IMPORTANT: Register Blueprint
+    app.register_blueprint(auth_bp, url_prefix="/api/auth")
+
+    return app
 from flask import Flask, send_from_directory
 from .extensions import db, migrate, bcrypt, jwt, cors
 from .routes.auth import auth_bp
@@ -17,6 +43,10 @@ def create_app():
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(protected_bp, url_prefix='/api')
+
+    # 🚀 ADD THIS BLOCK
+    with app.app_context():
+        db.create_all()
 
     @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")
